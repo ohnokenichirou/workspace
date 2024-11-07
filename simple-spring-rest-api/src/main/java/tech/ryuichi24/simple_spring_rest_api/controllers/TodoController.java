@@ -1,89 +1,63 @@
 package tech.ryuichi24.simple_spring_rest_api.controllers;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
-import org.springframework.http.HttpStatus;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import tech.ryuichi24.simple_spring_rest_api.models.TodoItem;
+import tech.ryuichi24.simple_spring_rest_api.services.TodoService;
 
 @RestController
 @RequestMapping(path = TodoController.BASE_URL)
 public class TodoController {
   public static final String BASE_URL = "/api/v1/todos";
-  private final AtomicInteger _counter = new AtomicInteger();
 
-  private final List<TodoItem> _todoItems = new ArrayList<>() {
-    {
-      add(new TodoItem(_counter.incrementAndGet(), "todo 1"));
-      add(new TodoItem(_counter.incrementAndGet(), "todo 2"));
-      add(new TodoItem(_counter.incrementAndGet(), "todo 3"));
-    }
-  };
+  @Autowired
+  private TodoService _todoService;
 
   // get todos
-  @RequestMapping(method = RequestMethod.GET, path = "")
-  public List<TodoItem> getTodoItems() {
-    return _todoItems;
+  @GetMapping(path = "")
+  public ResponseEntity<List<TodoItem>> getTodoItems() {
+    List<TodoItem> todoitems = _todoService.getTodoItems();
+    return ResponseEntity.ok(todoitems);
   }
 
   // get todo
-  @RequestMapping(method = RequestMethod.GET, path = "/{id}")
-  public TodoItem getTodoItem(@PathVariable int id) {
-    TodoItem found = _getTodoItemById(id);
-    if (found == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notfound");
-    }
-
-    return found;
+  @GetMapping(path = "/{id}")
+  public ResponseEntity<TodoItem> getTodoItem(@PathVariable int id) {
+    TodoItem found = _todoService.getTodoItemById(id);
+    return ResponseEntity.ok(found);
   }
 
   // create todo
-  @RequestMapping(method = RequestMethod.POST, path = "")
-  public ResponseEntity<TodoItem> createTodoItem(@RequestBody TodoItem todoItem) {
-    todoItem.setId(_counter.incrementAndGet());
-    _todoItems.add(todoItem);
+  @PostMapping(path = "")
+  public ResponseEntity<TodoItem> createTodoItem(@RequestBody TodoItem newTodoItem) {
+    TodoItem savedTodoItem = _todoService.saveTodoItem(newTodoItem);
     URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
-        .buildAndExpand(todoItem.getId()).toUri();
-    return ResponseEntity.created(location).body(todoItem);
+        .buildAndExpand(savedTodoItem.getId()).toUri();
+    return ResponseEntity.created(location).body(savedTodoItem);
   }
 
   // update todo
-  @RequestMapping(method = RequestMethod.PUT, path = "/{id}")
-  public ResponseEntity<?> updateTodoItem(@RequestBody TodoItem todoItem, @PathVariable int id) {
-    TodoItem found = _getTodoItemById(id);
-    if (found == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notfound");
-    }
-
-    _todoItems.remove(found);
-    _todoItems.add(todoItem);
-
+  @PutMapping(path = "/{id}")
+  public ResponseEntity<?> updateTodoItem(@RequestBody TodoItem newTodoItem, @PathVariable int id) {
+    _todoService.updateTodoItem(id, newTodoItem);
     return ResponseEntity.noContent().build();
   }
 
   // delete todo
-  @RequestMapping(method = RequestMethod.DELETE, path = "/{id}")
+  @DeleteMapping(path = "/{id}")
   public ResponseEntity<?> removeTodoItem(@PathVariable int id) {
-    TodoItem found = _getTodoItemById(id);
-    if (found == null) {
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Notfound");
-    }
-    _todoItems.remove(found);
-  
+    _todoService.removeTodoItemById(id);
     return ResponseEntity.noContent().build();
-}
-
-  private TodoItem _getTodoItemById(int id) {
-    return _todoItems.stream().filter(item -> item.getId() == id).findAny().orElse(null);
   }
-
 }
