@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import jakarta.validation.Valid;
 import tech.ryuichi24.simple_spring_rest_api.models.TodoItem;
 import tech.ryuichi24.simple_spring_rest_api.services.TodoService;
 
@@ -40,7 +41,7 @@ public class TodoController {
 
   // create todo
   @PostMapping(path = "")
-  public ResponseEntity<TodoItem> createTodoItem(@RequestBody TodoItem newTodoItem) {
+  public ResponseEntity<TodoItem> createTodoItem(@Valid @RequestBody TodoItem newTodoItem) {
     TodoItem savedTodoItem = _todoService.saveTodoItem(newTodoItem);
     URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}")
         .buildAndExpand(savedTodoItem.getId()).toUri();

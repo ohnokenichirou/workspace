@@ -1,7 +1,9 @@
 package tech.ryuichi24.simple_spring_rest_api.errors;
 
 import org.springframework.http.HttpStatus;
+import lombok.Getter;
 
+@Getter
 public class HttpException extends RuntimeException {
   private HttpStatus httpStatus;
 
@@ -29,14 +31,6 @@ public class HttpException extends RuntimeException {
   public HttpException(String message, Throwable cause, boolean enableSuppression,
       boolean writableStackTrace, HttpStatus httpStatus) {
     super(message, cause, enableSuppression, writableStackTrace);
-    this.httpStatus = httpStatus;
-  }
-
-  public HttpStatus getHttpStatus() {
-    return httpStatus;
-  }
-
-  public void setHttpStatus(HttpStatus httpStatus) {
     this.httpStatus = httpStatus;
   }
 }
