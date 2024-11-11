@@ -7,8 +7,9 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        hbm2dll:
+        hbm2ddl:
           create_namespaces: true
+    open-in-view: True
 
   datasource:
     url: jdbc:postgresql://${POSTGRES_HOST:postgres}:${POSTGRES_PORT:5432}/${POSTGRES_DB:dev}
